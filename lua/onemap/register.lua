@@ -130,10 +130,25 @@ end
 ---
 ---Errors on repeated keymap
 ---@param new_mappings table
----@param opts? {prefix: string}
+---@param opts? Config
 function M.register(new_mappings, opts)
+    local overriden_opts = {}
     opts = opts or {}
-    register_recur(opts.prefix or '', new_mappings, false)
+
+    for key, value in pairs(opts) do
+        overriden_opts[key] = config[key]
+        config[key] = value
+    end
+
+    local success, err = pcall(register_recur, opts.prefix, new_mappings, false)
+
+    for key, value in pairs(overriden_opts) do
+        config[key] = value
+    end
+
+    if not success then
+        error(err)
+    end
 end
 
 return M

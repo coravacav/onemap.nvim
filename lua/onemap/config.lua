@@ -2,6 +2,8 @@
 
 ---@class Config
 local config = {
+    ---@type string
+    prefix = '',
     ---@type table<number, string>
     groups = {},
     ---@type table<number, string>
