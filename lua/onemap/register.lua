@@ -58,7 +58,7 @@ local function individual_register(lhs, keymap)
     keymap.groups = {}
 
     for _, value in ipairs(current_groups) do
-        keymap.groups[# keymap.groups + 1] = value
+        keymap.groups[#keymap.groups + 1] = value
         groups[value].attached_maps[#groups[value].attached_maps + 1] = keymap
     end
 
@@ -106,7 +106,6 @@ local function register_recur(current_lhs, new_mappings, buffer_only)
             else
                 if type(value) ~= "table" then error("register function has invalid value" .. debug_kv(key, value)) end
 
-
                 if starts_with(key, config.group_prefix) then
                     local group_name = string.sub(key, #config.group_prefix + 1)
 
@@ -121,8 +120,12 @@ local function register_recur(current_lhs, new_mappings, buffer_only)
                     end
 
                     current_groups[#current_groups + 1] = group_name
-                    register_recur(current_lhs, value, buffer_only or groups[group_name].buffer_local)
+                    local success, err = pcall(register_recur, current_lhs, value, buffer_only or groups[group_name].buffer_local)
                     current_groups[#current_groups] = nil
+
+                    if not success then
+                        error(err)
+                    end
                 else
                     register_recur(current_lhs .. key, value, buffer_only)
                 end

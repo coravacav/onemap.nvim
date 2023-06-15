@@ -76,7 +76,10 @@ function M.toggle(group_name, state)
 
     if not group then error("cannot toggle group `" .. group_name .. "` - it does not exist") end
 
-    state = state or not group.is_enabled()
+    local group_is_enabled = group.is_enabled()
+    if state == group_is_enabled then return end
+
+    state = state or not group_is_enabled
     group.set_enabled(state)
 
     for _, map in pairs(group.attached_maps) do
