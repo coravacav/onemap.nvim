@@ -1,9 +1,20 @@
 local onemap = require 'onemap.init'
 
-onemap.setup {}
-
--- local t = onemap.create_group('test')
+onemap.setup {
+    groups = { 'test' }
+}
 
 onemap.register {
-    ['<leader>pp'] = { '<cmd>:lua vim.notify("hi")<cr>', 'notify for fun' }
+    ['<leader>mm'] = { function() end },
+    ['<leader>'] = { p = { p = { '<cmd>:lua vim.notify("hi")<cr>', 'notify for fun' } } },
+    ['<leader>p'] = {
+        z = { '<cmd>:lua vim.notify("gamer")<cr>', 'notify for fun' },
+        __test = {
+            b = {
+                '<cmd>:lua vim.notify("exclusivity")<cr>', 'notasdhf'
+            }
+        }
+    },
 }
+
+-- onemap.toggle('test', true)
