@@ -170,11 +170,9 @@ onemap.register({
         local key = context.key
         -- equal to "Telescope" here
         local value = context.value
-        -- equal to false here
-        local buffer_local = context.buffer_local
 
         if key == 'name' then
-            wk.register({ [current_path] = { name = value } }, { buffer = buffer_local })
+            wk.register({ [current_path] = { name = value } })
         end
     end
 })
