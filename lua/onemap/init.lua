@@ -19,6 +19,10 @@ function onemap.setup(user_config)
         config[option] = value
     end
 
+    if config.group_prefix == config.extra_info_prefix then
+        error('group_prefix and extra_info_prefix cannot be the same')
+    end
+
     for _, group in pairs(config.groups) do
         groups.create_group(group)
     end

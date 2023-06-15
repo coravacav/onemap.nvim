@@ -21,16 +21,6 @@ local function validate_modes(modes)
     end
 end
 
-local function share_modes(old_modes, new_modes)
-    for _, value in pairs(new_modes) do
-        if old_modes[value] then
-            return true
-        end
-    end
-
-    return false
-end
-
 ---Registers a single key with the system
 ---@param lhs LHS
 ---@param keymap Map
@@ -84,11 +74,15 @@ local function debug_kv(key, value)
     return "(key = `" .. vim.inspect(key) .. "` value = `" .. vim.inspect(value) .. "`)"
 end
 
+local function starts_with(str, start)
+    return str:sub(1, #start) == start
+end
+
 ---Recursively adds registers / groupings
----@param active_lhs string
+---@param current_lhs string
 ---@param new_mappings table
 ---@param buffer_only boolean
-local function register_recur(active_lhs, new_mappings, buffer_only)
+local function register_recur(current_lhs, new_mappings, buffer_only)
     for key, value in pairs(new_mappings) do
         if type(value) ~= "table" then error("register function has invalid value" .. debug_kv(key, value)) end
 
@@ -96,12 +90,18 @@ local function register_recur(active_lhs, new_mappings, buffer_only)
 
         if parsed_keymap then
             if type(key) == "string" then
-                individual_register(active_lhs .. key, parsed_keymap)
+                individual_register(current_lhs .. key, parsed_keymap)
             else
-                individual_register(active_lhs, parsed_keymap)
+                individual_register(current_lhs, parsed_keymap)
             end
         elseif type(key) == "string" then
-            if string.sub(key, 1, #config.group_prefix) == config.group_prefix then
+            if starts_with(key, config.extra_info_prefix) then
+                config.on_extra_info {
+                    current_lhs = current_lhs,
+                    key = string.sub(key, #config.extra_info_prefix + 1),
+                    value = value,
+                }
+            elseif starts_with(key, config.group_prefix) then
                 local group_name = string.sub(key, #config.group_prefix + 1)
 
                 if not groups[group_name] then
@@ -115,14 +115,12 @@ local function register_recur(active_lhs, new_mappings, buffer_only)
                 end
 
                 current_groups[#current_groups + 1] = group_name
-                register_recur(active_lhs, value, buffer_only or key == buffer_local)
+                register_recur(current_lhs, value, buffer_only or key == buffer_local)
                 current_groups[#current_groups] = nil
             else
-                register_recur(active_lhs .. key, value, buffer_only)
+                register_recur(current_lhs .. key, value, buffer_only)
             end
         else
-            vim.notify(type(key))
-            vim.notify(key.name)
             error("register function has invalid key" .. debug_kv(key, value))
         end
     end
