@@ -1,5 +1,6 @@
 ---@class Group
----@field enabled boolean
+---@field is_enabled function
+---@field set_enabled function
 ---@field buffer_local boolean
 ---@field attached_maps table<number, Map>
 
@@ -9,13 +10,31 @@ local groups = {}
 ---@param group_name string
 function groups.create_group(group_name)
     ---@type Group
-    local new_group = { enabled = false, attached_maps = {} }
+    local group = { attached_maps = {}, buffer_local = false }
 
     if groups[group_name] then
         error("group \"" .. group_name .. "\" already exists")
     end
 
-    groups[group_name] = new_group
+    local buf_key = "onekey_group_enabled_" .. group_name
+
+    local function get_right_buffer()
+        if group.buffer_local then
+            return vim.b
+        else
+            return vim.g
+        end
+    end
+
+    function group.is_enabled()
+        return get_right_buffer()[buf_key] or false
+    end
+
+    function group.set_enabled(state)
+        get_right_buffer()[buf_key] = state
+    end
+
+    groups[group_name] = group
 end
 
 ---Generates a table group key from a list of group names

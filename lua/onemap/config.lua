@@ -1,5 +1,3 @@
----@alias Update {lhs: string, buffer_local: boolean}
-
 ---@class Config
 local config = {
     ---@type string
@@ -12,9 +10,9 @@ local config = {
     group_prefix = '__',
     ---@type string
     extra_info_prefix = 'extra_',
-    ---@param update_obj Update
+    ---@param update_obj {lhs: string, buffer_local: boolean}
     on_register = function(update_obj) end,
-    ---@param update_obj Update
+    ---@param update_obj {lhs: string, buffer_local: boolean}
     on_unregister = function(update_obj) end,
     ---@param context {current_path: string, key: string, value: any}
     on_extra_info = function(context) end,

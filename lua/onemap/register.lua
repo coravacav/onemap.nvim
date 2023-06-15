@@ -121,7 +121,7 @@ local function register_recur(current_lhs, new_mappings, buffer_only)
                     end
 
                     current_groups[#current_groups + 1] = group_name
-                    register_recur(current_lhs, value, buffer_only or key == buffer_local)
+                    register_recur(current_lhs, value, buffer_only or groups[group_name].buffer_local)
                     current_groups[#current_groups] = nil
                 else
                     register_recur(current_lhs .. key, value, buffer_only)
@@ -147,7 +147,7 @@ function M.register(new_mappings, opts)
         config[key] = value
     end
 
-    local success, err = pcall(register_recur, opts.prefix, new_mappings, false)
+    local success, err = pcall(register_recur, config.prefix, new_mappings, false)
 
     for key, value in pairs(overriden_opts) do
         config[key] = value

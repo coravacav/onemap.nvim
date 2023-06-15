@@ -49,7 +49,7 @@ function M.create_keymap(buffer_local)
         local to_enable = false
 
         for _, grp in pairs(_key.groups) do
-            to_enable = groups[grp].enabled
+            to_enable = groups[grp].is_enabled()
             if not to_enable then break end
         end
 
@@ -68,17 +68,19 @@ function M.create_keymap(buffer_local)
 end
 
 ---Toggles a group
----@param group string
+---@param group_name string
 ---@param state boolean
-function M.toggle(group, state)
-    group = groups[group]
+function M.toggle(group_name, state)
+    ---@type Group?
+    local group = groups[group_name]
 
-    if not group then error("cannot toggle group `" .. group .. "` - it does not exist") end
+    if not group then error("cannot toggle group `" .. group_name .. "` - it does not exist") end
 
-    group.enabled = state or not group.enabled
+    state = state or not group.is_enabled()
+    group.set_enabled(state)
 
     for _, map in pairs(group.attached_maps) do
-        if group.enabled then
+        if state then
             map.register_key_if_able()
         else
             map.unregister_key()
