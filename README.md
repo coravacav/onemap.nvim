@@ -32,7 +32,7 @@ Install the plugin with your preferred package manager:
 }
 ```
 
-## ⚙️ Configuration
+## ⚙️ Configuration / Defaults
 
 Onemap comes with the following defaults:
 
@@ -52,161 +52,136 @@ Onemap comes with the following defaults:
     on_register = function(update_obj) end,
     ---@param update_obj { lhs: string, buffer_local: boolean } - triggers when key is unregistered
     on_unregister = function(update_obj) end,
-    ---@param context { current_path: string, key: string, value: any } - triggers when extra_info_prefix is detected
+    ---@param context { current_path: string, key: string, value: any, buffer_local: boolean } - triggers when extra_info_prefix is detected
     on_extra_info = function(context) end,
 }
 ```
 
 When you run `onemap.register`, you can override any of these options with the second argument.
 
-## 🪄 Setup
+### Basic Usage
 
-With the default settings, **WhichKey** will work out of the box for most builtin keybindings,
-but the real power comes from documenting and organizing your own keybindings.
-
-To document and/or setup your own mappings, you need to call the `register` method
+To add keymaps, just call `onemap.register`.
 
 ```lua
-local wk = require("which-key")
-wk.register(mappings, opts)
+local onemap = require("onemap")
+-- As an example, we will create the following mappings:
+--  * <leader>se find files
+
+-- This is only to cut down on example space
+local mapping = { ":Telescope find_files", "Find Files" }
+
+-- All of the following do the same thing
+onemap.register({ se = mapping }, { prefix = "<leader>" })
+onemap.register { ['<prefix>se'] = mapping }
+onemap.register({ ['prefix'] = { s = { e = mapping } } }, {})
 ```
 
-Default options for `opts`
+The "end keymap shape" can be any of the following
+
+```
+{function | string, string, ...}
+{function | string, desc = string, ...}
+{rhs = function | string, desc = string, ...}
+```
+
+with `...` being any of the following
+
+```
+modes = table -- default is { 'n' }
+```
+
+That's all you need for basic keymaps!
+
+### Adding groups
+
+Groups are where this plugin shines though. First, during your `onemap.setup`
+(or `opts` w/ lazy), add some group definitions.
 
 ```lua
-{
-  mode = "n", -- NORMAL mode
-  -- prefix: use "<leader>f" for example for mapping everything related to finding files
-  -- the prefix is prepended to every mapping part of `mappings`
-  prefix = "",
-  buffer = nil, -- Global mappings. Specify a buffer number for buffer local mappings
-  silent = true, -- use `silent` when creating keymaps
-  noremap = true, -- use `noremap` when creating keymaps
-  nowait = false, -- use `nowait` when creating keymaps
-  expr = false, -- use `expr` when creating keymaps
+local onemap = require 'onemap'
+
+onemap.setup {
+    -- list of strings, name of the groups
+    groups = { "group", "brou" },
+    -- must be a group in groups
+    -- makes any toggle for included groups only affect current buffer.
+    --   this is useful for lsp
+    buffer_local_groups = { "brou" }
 }
 ```
 
-> ❕ When you specify a command in your mapping that starts with `<Plug>`, then we automatically set `noremap=false`, since you always want recursive keybindings in this case
-
-### ⌨️ Mappings
-
-> ⌨ for **Neovim 0.7** and higher, which key will use the `desc` attribute of existing mappings as the default label
-
-Group names use the special `name` key in the tables. There's multiple ways to define the mappings. `wk.register` can be called multiple times from anywhere in your config files.
+Then, use the group by adding a key to the register object (at any depth)
+prefixed by `config.group_prefix`.
 
 ```lua
-local wk = require("which-key")
--- As an example, we will create the following mappings:
---  * <leader>ff find files
---  * <leader>fr show recent files
---  * <leader>fb Foobar
--- we'll document:
---  * <leader>fn new file
---  * <leader>fe edit file
--- and hide <leader>1
+local onemap = require 'onemap'
 
-wk.register({
-  f = {
-    name = "file", -- optional group name
-    f = { "<cmd>Telescope find_files<cr>", "Find File" }, -- create a binding with label
-    r = { "<cmd>Telescope oldfiles<cr>", "Open Recent File", noremap=false, buffer = 123 }, -- additional options for creating the keymap
-    n = { "New File" }, -- just a label. don't create any mapping
-    e = "Edit File", -- same as above
-    ["1"] = "which_key_ignore",  -- special label to hide it in the popup
-    b = { function() print("bar") end, "Foobar" } -- you can also pass functions!
-  },
-}, { prefix = "<leader>" })
+onemap.register({
+    -- "__" is the default group_prefix
+    __group = {
+        s = { "<cmd>lua ='test message'", "A test message" }
+    }
+    e = {
+        x = { "<cmd>lua ='test message'", "A test message" }
+        -- you can do it at any level
+        __brou = {
+            r = { "<cmd>lua ='test message'", "A test message" }
+        }
+        -- you can use a group more than once
+        __group = {
+            z = { "<cmd>lua ='test message'", "A test message" }
+        }
+    }
+}, { prefix = '<leader>' })
 ```
 
-<details>
-<summary>Click to see more examples</summary>
+After you've registered these keybinds, enable them with `onemap.toggle`
 
 ```lua
--- all of the mappings below are equivalent
+local onemap = require 'onemap'
 
--- method 2
-wk.register({
-  ["<leader>"] = {
-    f = {
-      name = "+file",
-      f = { "<cmd>Telescope find_files<cr>", "Find File" },
-      r = { "<cmd>Telescope oldfiles<cr>", "Open Recent File" },
-      n = { "<cmd>enew<cr>", "New File" },
-    },
-  },
-})
-
--- method 3
-wk.register({
-  ["<leader>f"] = {
-    name = "+file",
-    f = { "<cmd>Telescope find_files<cr>", "Find File" },
-    r = { "<cmd>Telescope oldfiles<cr>", "Open Recent File" },
-    n = { "<cmd>enew<cr>", "New File" },
-  },
-})
-
--- method 4
-wk.register({
-  ["<leader>f"] = { name = "+file" },
-  ["<leader>ff"] = { "<cmd>Telescope find_files<cr>", "Find File" },
-  ["<leader>fr"] = { "<cmd>Telescope oldfiles<cr>", "Open Recent File" },
-  ["<leader>fn"] = { "<cmd>enew<cr>", "New File" },
-})
+onemap.toggle('group')
+onemap.toggle('brou', false) -- optional boolean prop
 ```
 
-</details>
+### Advanced features
 
-**Tips:** The default label is `keymap.desc` or `keymap.rhs` or `""`,
-`:h nvim_set_keymap()` to get more details about `desc` and `rhs`.
+There are some extra event handlers that you might want to configure.
+`extra_info_prefix` works similarly to `group_prefix`, but instead of defining
+a group, it calls `on_extra_info` with the key and object! This lets you
+link arbitrary code like `which-key`
 
-### 🚙 Operators, Motions and Text Objects
-
-**WhichKey** provides help to work with operators, motions and text objects.
-
-> `[count]operator[count][text-object]`
-
-- operators can be configured with the `operators` option
-  - set `plugins.presets.operators` to `true` to automatically configure vim built-in operators
-  - set this to `false`, to only include the list you configured in the `operators` option.
-  - see [here](https://github.com/folke/which-key.nvim/blob/main/lua/which-key/plugins/presets/init.lua#L5) for the full list part of the preset
-- text objects are automatically retrieved from **operator pending** key maps (`omap`)
-  - set `plugins.presets.text_objects` to `true` to configure built-in text objects
-  - see [here](https://github.com/folke/which-key.nvim/blob/main/lua/which-key/plugins/presets/init.lua#L43)
-- motions are part of the preset `plugins.presets.motions` setting
-  - see [here](https://github.com/folke/which-key.nvim/blob/main/lua/which-key/plugins/presets/init.lua#L20)
-
-<details>
-<summary>How to disable some operators? (like v)</summary>
+I like which-key, so here's what I use for the event handlers to handle
+naming of the which-key groups.
 
 ```lua
--- make sure to run this code before calling setup()
--- refer to the full lists at https://github.com/folke/which-key.nvim/blob/main/lua/which-key/plugins/presets/init.lua
-local presets = require("which-key.plugins.presets")
-presets.operators["v"] = nil
+onemap.register({
+    s = {
+        -- "extra_" is the default `extra_info_prefix`
+        extra_name = "Telescope", -- this gets passed to `on_extra_info`
+        e = { ":Telescope find_files", "Find Files" }
+    }
+}, {
+    on_extra_info = function(context)
+        -- equal to "s" here
+        local current_path = context.current_path
+        -- equal to "name" here
+        local key = context.key
+        -- equal to "Telescope" here
+        local value = context.value
+        -- equal to false here
+        local buffer_local = context.buffer_local
+
+        if key == 'name' then
+            wk.register({ [current_path] = { name = value } }, { buffer = buffer_local })
+        end
+    end
+})
 ```
 
-</details>
+### Inspiration
 
-## 🚀 Usage
-
-When the **WhichKey** popup is open, you can use the following key bindings (they are also displayed at the bottom of the screen):
-
-- hit one of the keys to open a group or execute a key binding
-- `<esc>` to cancel and close the popup
-- `<bs>` go up one level
-- `<c-d>` scroll down
-- `<c-u>` scroll up
-
-Apart from the automatic opening, you can also manually open **WhichKey** for a certain `prefix`:
-
-> ❗️ don't create any keymappings yourself to trigger WhichKey. Unlike with _vim-which-key_, we do this fully automatically.
-> Please remove any left-over triggers you might have from using _vim-which-key_.
-
-```vim
-:WhichKey " show all mappings
-:WhichKey <leader> " show all <leader> mappings
-:WhichKey <leader> v " show all <leader> mappings for VISUAL mode
-:WhichKey '' v " show ALL mappings for VISUAL mode
-```
+I really liked how [which-key](https://github.com/folke/which-key.nvim) did their register function,
+but the lacking feature was being able to have _all_ my keymaps in one place (especially so I don't
+accidentally collide them)

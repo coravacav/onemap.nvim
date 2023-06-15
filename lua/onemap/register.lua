@@ -1,7 +1,6 @@
 local mapping        = require 'onemap.mapping'
 local groups         = require 'onemap.groups'
 local config         = require 'onemap.config'
-local buffer_local   = groups.buffer_local
 
 ---@class Register
 local M              = {}
@@ -81,10 +80,10 @@ end
 ---Recursively adds registers / groupings
 ---@param current_lhs string
 ---@param new_mappings table
----@param buffer_only boolean
-local function register_recur(current_lhs, new_mappings, buffer_only)
+---@param buffer_local boolean
+local function register_recur(current_lhs, new_mappings, buffer_local)
     for key, value in pairs(new_mappings) do
-        local parsed_keymap = mapping.parse_keymap(value, buffer_only)
+        local parsed_keymap = mapping.parse_keymap(value, buffer_local)
 
         if parsed_keymap then
             if type(key) == "string" then
@@ -98,6 +97,7 @@ local function register_recur(current_lhs, new_mappings, buffer_only)
                     current_path = current_lhs,
                     key = string.sub(key, #config.extra_info_prefix + 1),
                     value = value,
+                    buffer_local = buffer_local
                 })
 
                 if not success then
@@ -120,14 +120,14 @@ local function register_recur(current_lhs, new_mappings, buffer_only)
                     end
 
                     current_groups[#current_groups + 1] = group_name
-                    local success, err = pcall(register_recur, current_lhs, value, buffer_only or groups[group_name].buffer_local)
+                    local success, err = pcall(register_recur, current_lhs, value, buffer_local or groups[group_name].buffer_local)
                     current_groups[#current_groups] = nil
 
                     if not success then
                         error(err)
                     end
                 else
-                    register_recur(current_lhs .. key, value, buffer_only)
+                    register_recur(current_lhs .. key, value, buffer_local)
                 end
             end
         else
