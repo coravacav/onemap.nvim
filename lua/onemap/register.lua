@@ -84,8 +84,6 @@ end
 ---@param buffer_only boolean
 local function register_recur(current_lhs, new_mappings, buffer_only)
     for key, value in pairs(new_mappings) do
-        if type(value) ~= "table" then error("register function has invalid value" .. debug_kv(key, value)) end
-
         local parsed_keymap = mapping.parse_keymap(value, buffer_only)
 
         if parsed_keymap then
@@ -96,29 +94,38 @@ local function register_recur(current_lhs, new_mappings, buffer_only)
             end
         elseif type(key) == "string" then
             if starts_with(key, config.extra_info_prefix) then
-                config.on_extra_info {
-                    current_lhs = current_lhs,
+                local success, err = pcall(config.on_extra_info, {
+                    current_path = current_lhs,
                     key = string.sub(key, #config.extra_info_prefix + 1),
                     value = value,
-                }
-            elseif starts_with(key, config.group_prefix) then
-                local group_name = string.sub(key, #config.group_prefix + 1)
+                })
 
-                if not groups[group_name] then
-                    error("group \"" .. group_name .. "\" does not exist, ")
+                if not success then
+                    error("on_extra_info function failed with error: " .. err)
                 end
-
-                for _, grp in ipairs(current_groups) do
-                    if group_name == grp then
-                        error("register function called with nested group, " .. debug_kv(group_name, value))
-                    end
-                end
-
-                current_groups[#current_groups + 1] = group_name
-                register_recur(current_lhs, value, buffer_only or key == buffer_local)
-                current_groups[#current_groups] = nil
             else
-                register_recur(current_lhs .. key, value, buffer_only)
+                if type(value) ~= "table" then error("register function has invalid value" .. debug_kv(key, value)) end
+
+
+                if starts_with(key, config.group_prefix) then
+                    local group_name = string.sub(key, #config.group_prefix + 1)
+
+                    if not groups[group_name] then
+                        error("group \"" .. group_name .. "\" does not exist, ")
+                    end
+
+                    for _, grp in ipairs(current_groups) do
+                        if group_name == grp then
+                            error("register function called with nested group, " .. debug_kv(group_name, value))
+                        end
+                    end
+
+                    current_groups[#current_groups + 1] = group_name
+                    register_recur(current_lhs, value, buffer_only or key == buffer_local)
+                    current_groups[#current_groups] = nil
+                else
+                    register_recur(current_lhs .. key, value, buffer_only)
+                end
             end
         else
             error("register function has invalid key" .. debug_kv(key, value))

@@ -93,6 +93,8 @@ local legal_keys = { rhs = true, desc = true, modes = true, [1] = true, [2] = tr
 ---@param buffer_local boolean
 ---@return Map | nil
 function M.parse_keymap(tabl, buffer_local)
+    if type(tabl) ~= 'table' then return nil end
+
     for key, _ in pairs(tabl) do
         if not legal_keys[key] then return nil end
     end
