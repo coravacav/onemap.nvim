@@ -9,7 +9,7 @@ local config = {
     ---@type string
     group_prefix = '__',
     ---@type string
-    extra_info_prefix = '$$$',
+    extra_info_prefix = 'extra_',
     ---@param update_obj Update
     on_register = function(update_obj) end,
     ---@param update_obj Update
