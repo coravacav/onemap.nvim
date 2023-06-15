@@ -1,7 +1,6 @@
 local mapping        = require 'onemap.mapping'
 local groups         = require 'onemap.groups'
 local config         = require 'onemap.config'
-local run_once       = false
 local buffer_local   = groups.buffer_local
 
 ---@class Register
@@ -70,7 +69,7 @@ local function individual_register(lhs, keymap)
 
     for _, value in ipairs(current_groups) do
         keymap.groups[# keymap.groups + 1] = value
-        groups[value].attached_maps[#groups[value].attached_maps+1] = keymap
+        groups[value].attached_maps[#groups[value].attached_maps + 1] = keymap
     end
 
     if new_is_groupless then
@@ -132,11 +131,11 @@ end
 ---Register new keymappings.
 ---
 ---Errors on repeated keymap
----@param new_mappings any
-function M.register(new_mappings)
-    if run_once then error('You may only register once. define everything in one spot, that\'s the point') end
-    register_recur('', new_mappings, false)
-    run_once = true
+---@param new_mappings table
+---@param opts? {prefix: string}
+function M.register(new_mappings, opts)
+    opts = opts or {}
+    register_recur(opts.prefix or '', new_mappings, false)
 end
 
 return M

@@ -1,4 +1,5 @@
 local repr = require('onemap.repr')
+local config = require('onemap.config')
 local groups = require('onemap.groups')
 
 ---@class Map
@@ -40,6 +41,7 @@ function M.create_keymap(buffer_local)
             if _key.buffer_local then opts.buffer = true end
             repr['vim.keymap.set'](_key.modes, _key.lhs, _key.rhs, opts)
             _key.enabled = true
+            config.on_register({ lhs = _key.lhs, buffer_local = _key.buffer_local })
         end
     end
 
@@ -58,6 +60,7 @@ function M.create_keymap(buffer_local)
         if _key.enabled then
             repr['vim.keymap.del'](_key.modes, _key.lhs)
             _key.enabled = false
+            config.on_unregister({ lhs = _key.lhs, buffer_local = _key.buffer_local })
         end
     end
 
@@ -70,13 +73,13 @@ end
 function M.toggle(group, state)
     group = groups[group]
 
+    if not group then error("cannot toggle group `" .. group .. "` - it does not exist") end
+
     group.enabled = state or not group.enabled
 
     for _, map in pairs(group.attached_maps) do
         if group.enabled then
-            vim.notify(vim.inspect(map))
             map.register_key_if_able()
-            vim.notify(vim.inspect(map))
         else
             map.unregister_key()
         end

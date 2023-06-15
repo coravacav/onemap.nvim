@@ -1,4 +1,4 @@
----@alias Update {lhs: string, buffer_only: boolean, changed_group: string}
+---@alias Update {lhs: string, buffer_local: boolean}
 
 ---@class Config
 local config = {
@@ -8,10 +8,10 @@ local config = {
     buffer_local_groups = {},
     ---@type string
     group_prefix = '__',
-    ---@param update Update
-    on_register = function(update) end,
-    ---@param update Update
-    on_deregister = function(update) end,
+    ---@param update_obj Update
+    on_register = function(update_obj) end,
+    ---@param update_obj Update
+    on_unregister = function(update_obj) end,
 }
 
 return config
