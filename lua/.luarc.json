@@ -1,0 +1,9 @@
+{
+    "workspace.library": [
+        "/home/wrxl/.local/share/nvim/lazy/neodev.nvim/types/stable",
+        "/home/linuxbrew/.linuxbrew/Cellar/neovim/0.9.0/share/nvim/runtime/lua",
+        "/home/wrxl/onemap.nvim/lua",
+        "/home/wrxl/.local/share/nvim/mason/packages/lua-language-server/libexec/meta/2a19cb63",
+        "/home/wrxl/.local/share/nvim/mason/packages/lua-language-server/libexec/meta/2cbc27cc"
+    ]
+}
