@@ -95,8 +95,9 @@ That's all you need for basic keymaps!
 
 ### Adding groups
 
-Groups are where this plugin shines though. First, during your `onemap.setup`
-(or `opts` w/ lazy), add some group definitions.
+Groups are where this plugin shines though.
+Groups are a label that allows the organization of related keybinds.
+First, during your `onemap.setup` (or `opts` w/ lazy), add some group definitions.
 
 ```lua
 local onemap = require 'onemap'
@@ -143,6 +144,60 @@ local onemap = require 'onemap'
 
 onemap.toggle('group')
 onemap.toggle('brou', false) -- optional boolean prop
+```
+
+### Common patterns
+
+Groups are good generally for two things:
+
+#### LSP
+
+You can add your lsp bindings together with your normal bindings, to prevent conflicts
+
+```lua
+onemap.setup {
+    groups = { 'lsp' },
+    buffer_local_groups = { 'lsp' }
+}
+
+onemap.register {
+    ss = { ":Telescope find_files", "Find Files" },
+    __lsp = {
+        fa = {
+            function()
+                vim.lsp.buf.format({ async = false, timeout_ms = 10000 })
+            end,
+            "Format buffer"
+        }
+    }
+}
+
+-- in your lsp's on_attach
+
+onemap.toggle('lsp')
+```
+
+#### Menus
+
+You can make pseudo menus, by toggling groups!
+This is especially useful if you want to repeatedly press buttons,
+but a long binding is unwieldy.
+
+```lua
+onemap.setup {
+    groups = { 'window' }
+}
+
+onemap.register {
+    ['<leader>w'] = { function() onemap.toggle("window") end, "Start window menu" },
+    __window = {
+        h = { "<C-w>h", "Move to left window" },
+        j = { "<C-w>j", "Move to lower window" },
+        k = { "<C-w>k", "Move to upper window" },
+        l = { "<C-w>l", "Move to right window" },
+        ["<cr>"] = { function() onemap.toggle("window") end, "Stop window menu" },
+    }
+}
 ```
 
 ### Advanced features
