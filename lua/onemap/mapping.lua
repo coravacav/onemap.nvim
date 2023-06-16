@@ -8,8 +8,7 @@ local groups = require('onemap.groups')
 ---@field lhs string
 ---@field groups table<number, string>
 ---@field enabled boolean
----@field desc string
----@field buffer_local boolean
+---@field opts table
 ---@field unregister_key function
 ---@field register_key function
 ---@field register_key_if_able function
@@ -32,16 +31,16 @@ function M.create_keymap(buffer_local)
         enabled = false,
         modes = {},
         groups = {},
-        buffer_local = buffer_local,
+        opts = { buffer = buffer_local },
     }
+
+    local callback_data = { lhs = _key.lhs, buffer_local = _key.opts.buffer }
 
     function _key.register_key()
         if not _key.enabled then
-            local opts = { desc = _key.desc }
-            if _key.buffer_local then opts.buffer = true end
-            repr['vim.keymap.set'](_key.modes, _key.lhs, _key.rhs, opts)
+            repr['vim.keymap.set'](_key.modes, _key.lhs, _key.rhs, _key.opts)
             _key.enabled = true
-            config.on_register({ lhs = _key.lhs, buffer_local = _key.buffer_local })
+            config.on_register(callback_data)
         end
     end
 
@@ -60,7 +59,7 @@ function M.create_keymap(buffer_local)
         if _key.enabled then
             repr['vim.keymap.del'](_key.modes, _key.lhs)
             _key.enabled = false
-            config.on_unregister({ lhs = _key.lhs, buffer_local = _key.buffer_local })
+            config.on_unregister(callback_data)
         end
     end
 
@@ -91,7 +90,7 @@ function M.toggle(group_name, state)
     end
 end
 
-local legal_keys = { rhs = true, desc = true, modes = true, [1] = true, [2] = true }
+local legal_keys = { rhs = true, desc = true, modes = true, opts = true, [1] = true, [2] = true }
 
 ---Checks if a table matches format
 ---@param tabl any
@@ -111,8 +110,14 @@ function M.parse_keymap(tabl, buffer_local)
     local keymap = M.create_keymap(buffer_local)
 
     keymap.rhs = rhs
-    keymap.desc = desc
     keymap.modes = tabl.modes or { 'n' }
+    keymap.opts = { desc = desc }
+
+    if tabl.opts then
+        for k, v in pairs(tabl.opts) do
+            keymap.opts[k] = v
+        end
+    end
 
     return keymap
 end

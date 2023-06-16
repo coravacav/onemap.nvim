@@ -89,6 +89,7 @@ with `...` being any of the following
 
 ```
 modes = table -- default is { 'n' }
+opts = table -- passed directly to `vim.keymap.set`
 ```
 
 That's all you need for basic keymaps!
