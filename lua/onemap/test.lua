@@ -8,7 +8,7 @@ onemap.setup {
 onemap.create_group('tog')
 
 onemap.register {
-    ['<leader>_mm'] = { function() end },
+    ['<leader>_mm'] = { onemap.toggle_fn('test'), "this is a message" },
     ['<leader>_'] = { p = { p = { '<cmd>:lua vim.notify("hi")<cr>', 'notify for fun' } } },
     ['<leader>_p'] = {
         z = { '<cmd>:lua vim.notify("gamer")<cr>', 'notify for fun' },
