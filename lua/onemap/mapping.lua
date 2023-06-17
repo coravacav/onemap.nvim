@@ -97,7 +97,7 @@ function M.parse_keymap(tabl, buffer_local)
     local keymap = M.create_keymap(buffer_local)
 
     keymap.rhs = rhs
-    keymap.modes = tabl.modes or { 'n' }
+    keymap.modes = tabl.modes or config.default_modes
     keymap.opts = { desc = desc }
 
     if tabl.opts then

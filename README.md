@@ -66,6 +66,8 @@ Onemap comes with the following defaults:
     notify_on_possible_conflict = 'off',
     ---@type boolean
     whichkey_integration = false,
+    ---@type table<number, string>
+    default_modes = { 'n' },
 }
 ```
 
