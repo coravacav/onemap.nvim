@@ -43,7 +43,7 @@ function onemap.setup(user_config)
     has_setup = true
 end
 
-function onemap.toggle_fn(group_name) function mapping.toggle(group_name) end end
+function onemap.toggle_fn(group_name, value) function mapping.toggle(group_name, value) end end
 
 onemap.register = register.register
 onemap.toggle = mapping.toggle
