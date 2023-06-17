@@ -1,6 +1,7 @@
 local mapping        = require 'onemap.mapping'
 local groups         = require 'onemap.groups'
 local config         = require 'onemap.config'
+local wki            = require 'onemap.whichkey'
 
 ---@class Register
 local M              = {}
@@ -54,7 +55,7 @@ local function individual_register(lhs, keymap)
                 current_groups[#current_groups] .. "` (mapping = " .. lhs .. ")", vim.log.levels.WARN)
         elseif config.notify_on_possible_conflict == "error" then
             error("map overwrite possible when enabling group `" ..
-            current_groups[#current_groups] .. "` (mapping = " .. lhs .. ")")
+                current_groups[#current_groups] .. "` (mapping = " .. lhs .. ")")
         end
     else
         saved = {}
@@ -102,12 +103,33 @@ local function register_recur(current_lhs, new_mappings, buffer_local)
             end
         elseif type(key) == "string" then
             if starts_with(key, config.extra_info_prefix) then
-                local success, err = pcall(config.on_extra_info, {
+                local extra_info = {
                     current_path = current_lhs,
                     key = string.sub(key, #config.extra_info_prefix + 1),
                     value = value,
-                    buffer_local = buffer_local
-                })
+                    buffer_local = buffer_local,
+                    event = 'registered',
+                }
+
+                local success, err = pcall(config.on_extra_info, extra_info)
+                extra_info.event = nil
+
+                local on_extra_info_ref = config.on_extra_info
+
+                function extra_info.on_extra_info(event)
+                    extra_info.event = event
+                    success, err = pcall(on_extra_info_ref, extra_info)
+                    extra_info.event = nil
+
+                    if not success then
+                        error("on_extra_info function failed with error: " .. err)
+                    end
+                end
+
+                for _, grp_name in ipairs(current_groups) do
+                    local grp = groups[grp_name]
+                    grp.attached_extra_infos[#grp.attached_extra_infos + 1] = extra_info
+                end
 
                 if not success then
                     error("on_extra_info function failed with error: " .. err)
@@ -154,6 +176,7 @@ end
 function M.register(new_mappings, opts)
     local overriden_opts = {}
     opts = opts or {}
+    opts.on_extra_info = opts.on_extra_info or config.whichkey_integration and wki.on_extra_info
 
     for key, value in pairs(opts) do
         overriden_opts[key] = config[key]

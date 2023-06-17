@@ -1,7 +1,8 @@
 local onemap = require 'onemap.init'
 
 onemap.setup {
-    groups = { 'test' }
+    groups = { 'test' },
+    whichkey_integration = true,
 }
 
 onemap.create_group('tog')
@@ -22,13 +23,15 @@ onemap.register {
 onemap.register({
     ['<leader>_p'] = {
         __tog = {
+            extra_wk_name = 'tog',
             b = {
                 '<cmd>:lua vim.notify("ov")<cr>', 'notasdhf'
             }
         }
     }
 }, {
-    notify_on_possible_conflict = 'warn'
+    notify_on_possible_conflict = 'warn',
+    whichkey_integration = true,
 })
 
 -- onemap.toggle('test', true)

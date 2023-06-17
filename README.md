@@ -38,22 +38,34 @@ Onemap comes with the following defaults:
 
 ```lua
 {
-    ---@type string - this is an automatically prepended string to all recursive bindings
+    ---@type string
+    --- this is an automatically prepended string to all recursive bindings
     prefix = '',
-    ---@type table<number, string> - these are the groups that you can use in the register function
+    ---@type table<number, string>
+    --- these are the groups that you can use in the register function
     groups = {},
-    ---@type table<number, string> - these are the list of groups that add bindings to the current buffer when enabled
+    ---@type table<number, string>
+    --- these are the list of groups that add bindings to the current buffer when enabled
     buffer_local_groups = {},
-    ---@type string - this is the prefix used for when you want to use a group
+    ---@type string
+    --- this is the prefix used for when you want to use a group
     group_prefix = '__',
-    ---@type string - this is the prefix used for when you want to pass arbitrary info to on_extra_info
+    ---@type string
+    --- this is the prefix used for when you want to pass arbitrary info to on_extra_info
     extra_info_prefix = 'extra_',
-    ---@param update_obj { lhs: string, buffer_local: boolean } - triggers when key is registered
-    on_register = function(update_obj) end,
-    ---@param update_obj { lhs: string, buffer_local: boolean } - triggers when key is unregistered
-    on_unregister = function(update_obj) end,
-    ---@param context { current_path: string, key: string, value: any, buffer_local: boolean } - triggers when extra_info_prefix is detected
+    ---@param context { lhs: string, buffer_local: boolean }
+    --- triggers when key is registered
+    on_register = function(context) end,
+    ---@param context { lhs: string, buffer_local: boolean }
+    --- triggers when key is unregistered
+    on_unregister = function(context) end,
+    ---@param context { current_path: string, key: string, value: any, buffer_local: boolean, event: 'registered' | 'enabled' | 'disabled' }
+    --- triggers when extra_info_prefix is detected
     on_extra_info = function(context) end,
+    ---@type 'off' | 'warn' | 'error'
+    notify_on_possible_conflict = 'off',
+    ---@type boolean
+    whichkey_integration = false,
 }
 ```
 
@@ -203,13 +215,14 @@ onemap.register {
 
 ### Advanced features
 
+#### Extending functionality
+
 There are some extra event handlers that you might want to configure.
 `extra_info_prefix` works similarly to `group_prefix`, but instead of defining
 a group, it calls `on_extra_info` with the key and object! This lets you
 link arbitrary code like `which-key`
 
-I like which-key, so here's what I use for the event handlers to handle
-naming of the which-key groups.
+##### Which-key has first-class support through the config, this is an "arbitrary" example
 
 ```lua
 onemap.register({
@@ -242,6 +255,40 @@ Useful for if you want to isolate plugin configuration.
 ---@param group string - name of the new group
 ---@param buffer_local? - whether the group is buffer_local
 onemap.create_group(group, buffer_local)
+```
+
+#### Which-key integration
+
+To enable which-key integration, simply turn on `config.whichkey_integration`.
+
+Then, just use `extra_wk_name` where applicable.
+
+```lua
+onemap.register {
+    a = {
+        -- This will get passed in to whichkey.register and label the group properly
+        extra_wk_name = "Menu label"
+        b = { "<cmd>lua ='Hi'", "Description" } -- Descriptions are also automatically registered
+    }
+}
+```
+
+The integration uses the builtin `on_extra_info` and `on_unregister` features, so, if you're
+extending that manually, be sure to pass in the builtin `which-key` one as well with `onemap.wki`
+
+```lua
+onemap.register( { ... } , {
+    on_extra_info = function (context)
+        onemap.wki.on_extra_info(context)
+
+        -- your code here.
+    end,
+    on_unregister = function (context)
+        onemap.wki.on_unregister(context)
+
+        -- your code here.
+    end
+})
 ```
 
 ### Inspiration

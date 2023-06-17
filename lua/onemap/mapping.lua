@@ -1,27 +1,8 @@
 local repr = require('onemap.repr')
 local config = require('onemap.config')
 local groups = require('onemap.groups')
-
----@class Map
----@field modes table
----@field rhs string | function
----@field lhs string
----@field groups table<number, string>
----@field enabled boolean
----@field opts table
----@field unregister_key function
----@field register_key function
----@field register_key_if_able function
-
----@alias LHS string lhs of a map
----@alias GroupStr string unique id for collection of groups
----@alias GroupMap table<GroupStr, Map> collection of maps based on group
-
----@type table<LHS, GroupMap>
-local maps = {}
-
----@class CompleteMapping
-local M = { maps = maps }
+local wki = require('onemap.whichkey')
+local M = require('onemap.mapping_data')
 
 ---Creates a template keymap
 ---@return Map
@@ -40,6 +21,7 @@ function M.create_keymap(buffer_local)
         if not _key.enabled then
             repr['vim.keymap.set'](_key.modes, _key.lhs, _key.rhs, _key.opts)
             _key.enabled = true
+            if config.whichkey_integration then wki.register(_key.lhs, _key.opts.desc) end
             config.on_register(callback_data)
         end
     end
@@ -59,6 +41,7 @@ function M.create_keymap(buffer_local)
         if _key.enabled then
             repr['vim.keymap.del'](_key.modes, _key.lhs)
             _key.enabled = false
+            if config.whichkey_integration then wki.unregister(_key.lhs) end
             config.on_unregister(callback_data)
         end
     end
@@ -87,6 +70,10 @@ function M.toggle(group_name, state)
         else
             map.unregister_key()
         end
+    end
+
+    for _, extra_info in pairs(group.attached_extra_infos) do
+        extra_info.on_extra_info(state and 'enabled' or 'disabled')
     end
 end
 

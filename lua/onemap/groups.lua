@@ -3,6 +3,7 @@
 ---@field set_enabled function
 ---@field buffer_local boolean
 ---@field attached_maps table<number, Map>
+---@field attached_extra_infos table<number, any>
 
 local groups = {}
 
@@ -11,7 +12,11 @@ local groups = {}
 ---@param buffer_local? boolean
 function groups.create_group(group_name, buffer_local)
     ---@type Group
-    local group = { attached_maps = {}, buffer_local = buffer_local or false }
+    local group = {
+        attached_maps = {},
+        attached_extra_infos = {},
+        buffer_local = buffer_local or false
+    }
 
     if groups[group_name] then
         error("group \"" .. group_name .. "\" already exists")
