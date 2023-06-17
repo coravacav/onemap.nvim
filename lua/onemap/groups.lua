@@ -8,9 +8,10 @@ local groups = {}
 
 --- Creates a new group.
 ---@param group_name string
-function groups.create_group(group_name)
+---@param buffer_local? boolean
+function groups.create_group(group_name, buffer_local)
     ---@type Group
-    local group = { attached_maps = {}, buffer_local = false }
+    local group = { attached_maps = {}, buffer_local = buffer_local or false }
 
     if groups[group_name] then
         error("group \"" .. group_name .. "\" already exists")

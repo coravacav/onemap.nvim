@@ -234,6 +234,16 @@ onemap.register({
 })
 ```
 
+You can also add groups dynamically with `onemap.create_group`.
+You'd need to do this before registering any keymaps with that group.
+Useful for if you want to isolate plugin configuration.
+
+```lua
+---@param group string - name of the new group
+---@param buffer_local? - whether the group is buffer_local
+onemap.create_group(group, buffer_local)
+```
+
 ### Inspiration
 
 I really liked how [which-key](https://github.com/folke/which-key.nvim) did their register function,

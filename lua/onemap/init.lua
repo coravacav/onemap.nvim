@@ -24,7 +24,7 @@ function onemap.setup(user_config)
     end
 
     for _, group in pairs(config.groups) do
-        groups.create_group(group)
+        groups.create_group(group, false)
     end
 
     for _, group in pairs(config.buffer_local_groups) do
