@@ -205,6 +205,8 @@ onemap.setup {
 
 onemap.register {
     ['<leader>w'] = { function() onemap.toggle("window") end, "Start window menu" },
+    -- The same as above, but shorter
+    ['<leader>w'] = { onemap.toggle_fn("window"), "Start window menu" },
     __window = {
         h = { "<C-w>h", "Move to left window" },
         j = { "<C-w>j", "Move to lower window" },
