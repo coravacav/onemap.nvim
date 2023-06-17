@@ -16,6 +16,8 @@ local config = {
     on_unregister = function(update_obj) end,
     ---@param context { current_path: string, key: string, value: any, buffer_local: boolean }
     on_extra_info = function(context) end,
+    ---@type 'off' | 'warn' | 'error'
+    notify_on_possible_conflict = 'off',
 }
 
 return config

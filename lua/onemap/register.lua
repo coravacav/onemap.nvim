@@ -33,7 +33,7 @@ local function individual_register(lhs, keymap)
     local new_is_groupless = current_groups[1] == nil
 
     if saved then
-        local old_is_groupless = saved[1] == nil
+        local old_is_groupless = saved[1] ~= nil
 
         if new_is_groupless and old_is_groupless then
             error("mapping conflict - duplicate entry (mapping = " .. lhs .. ")")
@@ -46,6 +46,15 @@ local function individual_register(lhs, keymap)
         if saved[group_key] then
             error("mapping conflict - two bindings have the same groups defined in different orders (mapping = " ..
                 lhs .. ")")
+        end
+
+        if config.notify_on_possible_conflict == "warn" then
+            vim.notify(
+                "warning - map overwrite possible when enabling group `" ..
+                current_groups[#current_groups] .. "` (mapping = " .. lhs .. ")", vim.log.levels.WARN)
+        elseif config.notify_on_possible_conflict == "error" then
+            error("map overwrite possible when enabling group `" ..
+            current_groups[#current_groups] .. "` (mapping = " .. lhs .. ")")
         end
     else
         saved = {}
@@ -120,7 +129,8 @@ local function register_recur(current_lhs, new_mappings, buffer_local)
                     end
 
                     current_groups[#current_groups + 1] = group_name
-                    local success, err = pcall(register_recur, current_lhs, value, buffer_local or groups[group_name].buffer_local)
+                    local success, err = pcall(register_recur, current_lhs, value,
+                        buffer_local or groups[group_name].buffer_local)
                     current_groups[#current_groups] = nil
 
                     if not success then
