@@ -169,7 +169,7 @@ local function register_recur(current_lhs, new_mappings, buffer_local)
     end
 end
 
----Register new keymappings.
+---Register new keymappings, object style
 ---
 ---Errors on repeated keymap
 ---@param new_mappings table
@@ -179,20 +179,9 @@ function M.register(new_mappings, opts)
         error("onemap.setup has not been done")
     end
 
-    local overriden_opts = {}
-    opts = opts or {}
-    opts.on_extra_info = opts.on_extra_info or config.whichkey_integration and wki.on_extra_info
-
-    for key, value in pairs(opts) do
-        overriden_opts[key] = config[key]
-        config[key] = value
-    end
-
+    local cleanup = config.temporary_extend(opts)
     local success, err = pcall(register_recur, config.prefix, new_mappings, false)
-
-    for key, value in pairs(overriden_opts) do
-        config[key] = value
-    end
+    cleanup()
 
     if not success then
         error(err)

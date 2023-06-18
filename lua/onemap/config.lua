@@ -1,3 +1,5 @@
+local wki = require('onemap.whichkey')
+
 ---@alias OnRegister function(context: { lhs: string, buffer_local: boolean })
 ---@alias OnUnregister function(context: { lhs: string, buffer_local: boolean })
 ---@alias OnExtraInfoEvent string 'registered' | 'enabled' | 'disabled'
@@ -29,5 +31,22 @@ local config = {
     ---@type table<number, string>
     default_modes = { 'n' },
 }
+
+function config.temporary_extend(opts)
+    local overriden_opts = {}
+    opts = opts or {}
+    opts.on_extra_info = opts.on_extra_info or config.whichkey_integration and wki.on_extra_info
+
+    for key, value in pairs(opts) do
+        overriden_opts[key] = config[key]
+        config[key] = value
+    end
+
+    return function()
+        for key, value in pairs(overriden_opts) do
+            config[key] = value
+        end
+    end
+end
 
 return config
