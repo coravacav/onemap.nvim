@@ -2,6 +2,7 @@ local mapping        = require 'onemap.mapping'
 local groups         = require 'onemap.groups'
 local config         = require 'onemap.config'
 local wki            = require 'onemap.whichkey'
+local has            = require 'onemap.has'
 
 ---@class Register
 local M              = {}
@@ -174,6 +175,10 @@ end
 ---@param new_mappings table
 ---@param opts? Config
 function M.register(new_mappings, opts)
+    if not has.setup then
+        error("onemap.setup has not been done")
+    end
+
     local overriden_opts = {}
     opts = opts or {}
     opts.on_extra_info = opts.on_extra_info or config.whichkey_integration and wki.on_extra_info

@@ -6,11 +6,10 @@ local groups = require 'onemap.groups'
 local register = require 'onemap.register'
 local mapping = require 'onemap.mapping'
 local wki = require 'onemap.whichkey'
-
-local has_setup = false
+local has = require 'onemap.has'
 
 function onemap.setup(user_config)
-    if has_setup then
+    if has.setup then
         error('Onemap has already been setup')
     end
 
@@ -40,7 +39,7 @@ function onemap.setup(user_config)
         groups[group].buffer_local = true
     end
 
-    has_setup = true
+    has.setup = true
 end
 
 function onemap.toggle_fn(group_name, value)
