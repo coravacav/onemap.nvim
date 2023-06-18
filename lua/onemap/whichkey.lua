@@ -2,6 +2,7 @@ local success, wk = pcall(require, 'which-key')
 
 if not success then
     return {
+        register = function() end,
         on_extra_info = function() end,
         on_unregister = function() end,
     }

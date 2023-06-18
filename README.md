@@ -108,6 +108,41 @@ opts = table -- passed directly to `vim.keymap.set`
 
 That's all you need for basic keymaps!
 
+#### Another option
+
+You can also register keymaps with `onemap.oneshot`. Everything is the same as above,
+but you don't need to do all sorts of object syntax.
+
+```lua
+---@param lhs string
+---@param rhs string | function
+---@param desc? string
+---@param group? string
+---@param mapping_opts? table
+---@param config_opts? table
+onemap.oneshot(lhs, rhs, desc, group, mapping_opts, config_opts)
+
+onemap.oneshot(
+    'ss',
+    '<cmd>Telescope find_files<cr>',
+    'Telescope find files',
+    'test',
+    { silent = true },
+    { prefix = '<leader>' }
+)
+-- is equivalent to
+onemap.register(
+    { ss = { '<cmd>Telescope find_files<cr>', 'Telescope find files', opts = { silent = true } } },
+    { prefix = '<leader>' }
+)
+```
+
+There are also a couple of presets, for various usecases
+
+```lua
+onemap.oneshot_silent = oneshot(..., ..., ..., ..., { silent = true }, ...)
+```
+
 ### Adding groups
 
 Groups are where this plugin shines though.

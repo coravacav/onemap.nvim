@@ -54,4 +54,7 @@ onemap.wki = {
     on_unregister = wki.on_unregister,
 }
 
+onemap.oneshot = register.oneshot
+onemap.oneshot_silent = register.create_oneshot({ silent = true })
+
 return onemap

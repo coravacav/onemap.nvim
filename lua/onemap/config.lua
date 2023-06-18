@@ -32,7 +32,7 @@ local config = {
     default_modes = { 'n' },
 }
 
-function config.temporary_extend(opts)
+function config.temporarily_extend(opts)
     local overriden_opts = {}
     opts = opts or {}
     opts.on_extra_info = opts.on_extra_info or config.whichkey_integration and wki.on_extra_info

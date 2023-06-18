@@ -1,5 +1,7 @@
 local onemap = require 'onemap.init'
 
+vim.g.mapleader = " "
+
 onemap.setup {
     groups = { 'test' },
     whichkey_integration = true,
@@ -30,8 +32,10 @@ onemap.register({
         }
     }
 }, {
-    notify_on_possible_conflict = 'warn',
     whichkey_integration = true,
 })
+
+onemap.oneshot('<leader>tt', '<cmd>:lua ="mwa"<cr>')
+onemap.oneshot_silent('<leader>ts', '<cmd>:lua ="ahaha"<cr>')
 
 -- onemap.toggle('test', true)

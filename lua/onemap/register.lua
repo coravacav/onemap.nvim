@@ -179,12 +179,62 @@ function M.register(new_mappings, opts)
         error("onemap.setup has not been done")
     end
 
-    local cleanup = config.temporary_extend(opts)
+    local cleanup = config.temporarily_extend(opts)
     local success, err = pcall(register_recur, config.prefix, new_mappings, false)
     cleanup()
 
     if not success then
         error(err)
+    end
+end
+
+---Register new keymap, oneshot style
+---
+---@param lhs string
+---@param rhs string | function
+---@param desc? string
+---@param group? string
+---@param mapping_opts? table
+---@param config_opts? table
+function M.oneshot(lhs, rhs, desc, group, mapping_opts, config_opts)
+    if not has.setup then
+        error("onemap.setup has not been done")
+    end
+
+    local cleanup = config.temporarily_extend(config_opts)
+
+    local register_arg = { [lhs] = { rhs, desc, opts = mapping_opts } }
+    if group then
+        register_arg = { [config.group_prefix .. group] = register_arg }
+    end
+
+    local success, err = pcall(register_recur, config.prefix, register_arg, false)
+
+    cleanup()
+
+    if not success then
+        error(err)
+    end
+end
+
+function M.create_oneshot(default_mapping_opts)
+    return function(lhs, rhs, desc, group, mapping_opts, config_opts)
+        local overriden_opts = {}
+
+        for key, value in pairs(mapping_opts or {}) do
+            overriden_opts[key] = default_mapping_opts[key]
+            default_mapping_opts[key] = value
+        end
+
+        local success, err = pcall(M.oneshot, lhs, rhs, desc, group, default_mapping_opts, config_opts)
+
+        for key, value in pairs(overriden_opts) do
+            default_mapping_opts[key] = value
+        end
+
+        if not success then
+            error(err)
+        end
     end
 end
 
