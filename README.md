@@ -59,7 +59,14 @@ Onemap comes with the following defaults:
     ---@param context { lhs: string, buffer_local: boolean }
     --- triggers when key is unregistered
     on_unregister = function(context) end,
-    ---@param context { current_path: string, key: string, value: any, buffer_local: boolean, event: 'registered' | 'enabled' | 'disabled' }
+    ---@param context
+    --   {
+    --       current_path: string,
+    --       key: string,
+    --       value: any,
+    --       buffer_local: boolean,
+    --       event: 'registered' | 'registered(groupless)' | 'enabled' | 'disabled',
+    --   }
     --- triggers when extra_info_prefix is detected
     on_extra_info = function(context) end,
     ---@type 'off' | 'warn' | 'error'
@@ -75,7 +82,7 @@ When you run `onemap.register`, you can override any of these options with the s
 
 ### Basic Usage
 
-To add keymaps, just call `onemap.register`.
+To add keymaps, just call `onemap.register`. You can call this function anywhere, anytime.
 
 ```lua
 local onemap = require("onemap")

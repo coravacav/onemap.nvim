@@ -104,12 +104,19 @@ local function register_recur(current_lhs, new_mappings, buffer_local)
             end
         elseif type(key) == "string" then
             if starts_with(key, config.extra_info_prefix) then
+                local register_event
+                if #current_groups == 0 then
+                    register_event = 'registered(groupless)'
+                else
+                    register_event = 'registered'
+                end
+
                 local extra_info = {
                     current_path = current_lhs,
                     key = string.sub(key, #config.extra_info_prefix + 1),
                     value = value,
                     buffer_local = buffer_local,
-                    event = 'registered',
+                    event = register_event,
                 }
 
                 local success, err = pcall(config.on_extra_info, extra_info)

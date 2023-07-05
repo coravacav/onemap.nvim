@@ -28,7 +28,7 @@ function M.on_extra_info(context)
 
     if key ~= 'wk_name' then return end
 
-    if event == 'enabled' then
+    if event == 'enabled' or event == 'registered(groupless)' then
         M.register(current_path, value)
     elseif event == 'disabled' then
         for k, v in pairs(maps) do
